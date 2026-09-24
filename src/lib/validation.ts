@@ -32,6 +32,12 @@ export const registrationSchema = z.object({
   }
 });
 
+export const profileSchema = z.object({
+  fullName: z.string().trim().min(2).max(120),
+  phone: z.string().trim().max(30).optional().default(""),
+  address: z.string().trim().max(240).optional().default(""),
+});
+
 export const adminActionSchema = z.object({
   action: z.enum(["receive", "assign", "start", "resolve", "reject"]),
   note: z.string().trim().max(2000).optional().default(""),

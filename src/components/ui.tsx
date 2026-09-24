@@ -11,7 +11,7 @@ import {
   ShieldCheck,
   Siren,
 } from "lucide-react";
-import { categoryLabels, statusLabels } from "@/lib/types";
+import { categoryLabels, documentStatusLabels, statusLabels } from "@/lib/types";
 
 export function Brand({ compact = false }: { compact?: boolean }) {
   return (
@@ -40,6 +40,10 @@ export function StatusBadge({ status, urgent = false }: { status: Concern["statu
   return <span className={`status-badge ${urgent ? "urgent" : status}`}>{urgent ? "Urgent" : statusLabels[status]}</span>;
 }
 
+export function DocumentStatusBadge({ status }: { status: import("@/lib/types").DocumentStatus }) {
+  return <span className={`status-badge doc-${status}`}>{documentStatusLabels[status]}</span>;
+}
+
 export function MetricCard({ icon: Icon, label, value, detail }: { icon: typeof BarChart3; label: string; value: string | number; detail: string }) {
   return <div className="metric-card"><div className="metric-top"><span>{label}</span><span className="metric-icon"><Icon size={15} /></span></div><strong className="metric-value">{value}</strong><small className="metric-detail">{detail}</small></div>;
 }
@@ -52,8 +56,33 @@ export function ActivityRow({ concern }: { concern: Concern }) {
   return <Link className="activity-row" href={`/app/concerns/${concern.reference}`}><div className="activity-row-main"><strong>{concern.title}</strong><small>{concern.reference} · {categoryLabels[concern.category]} · {new Date(concern.updatedAt).toLocaleDateString()}</small></div><div className="activity-row-end"><StatusBadge status={concern.status} urgent={concern.urgency === "urgent"} /><ArrowUpRight size={16} color="#718399" /></div></Link>;
 }
 
-export function AnnouncementRow({ title, excerpt, priority, publishedAt }: { title: string; excerpt: string; priority: "high" | "standard"; publishedAt: string }) {
-  return <div className="announcement-row"><span className={`priority-dot ${priority === "high" ? "high" : ""}`} /><div><h3>{title}</h3><p>{excerpt}</p><small className="muted small">{new Date(publishedAt).toLocaleDateString()}</small></div></div>;
+export function AnnouncementRow({
+  title,
+  excerpt,
+  priority,
+  publishedAt,
+  type,
+}: {
+  title: string;
+  excerpt: string;
+  priority: "high" | "standard";
+  publishedAt: string;
+  type?: import("@/lib/types").AnnouncementType;
+}) {
+  const isEmergency = type === "emergency" || priority === "high";
+  return (
+    <div className={`announcement-row ${isEmergency ? "is-important" : ""}`}>
+      <span className={`priority-dot ${isEmergency ? "high" : ""}`} aria-hidden="true" />
+      <div>
+        <div className="announcement-meta">
+          {type && <span className="type-tag">{type === "service_notice" ? "Service notice" : type.charAt(0).toUpperCase() + type.slice(1)}</span>}
+          <small className="muted small">{new Date(publishedAt).toLocaleDateString()}</small>
+        </div>
+        <h3>{title}</h3>
+        <p>{excerpt}</p>
+      </div>
+    </div>
+  );
 }
 
 export function SdgCard({ number, name, metrics }: { number: "11" | "16"; name: string; metrics: ImpactMetric[] }) {

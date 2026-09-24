@@ -42,6 +42,7 @@ export interface Profile {
   policyAcceptedAt?: string;
   role: UserRole;
   organizationName: string;
+  phone?: string;
 }
 
 export interface Attachment {
@@ -109,19 +110,60 @@ export interface DocumentRequest {
   updates: { id: string; status: DocumentStatus; note: string; createdAt: string }[];
 }
 
+export const announcementTypes = [
+  "announcement",
+  "advisory",
+  "emergency",
+  "service_notice",
+] as const;
+
+export type AnnouncementType = (typeof announcementTypes)[number];
+
+export const announcementStatuses = ["draft", "published", "archived"] as const;
+
+export type AnnouncementStatus = (typeof announcementStatuses)[number];
+
 export interface Announcement {
   id: string;
   priority: "high" | "standard";
   title: string;
   excerpt: string;
   publishedAt: string;
+  type?: AnnouncementType;
+  status?: AnnouncementStatus;
 }
+
+export const announcementTypeLabels: Record<AnnouncementType, string> = {
+  announcement: "Announcement",
+  advisory: "Advisory",
+  emergency: "Emergency",
+  service_notice: "Service notice",
+};
+
+export const emergencyCategories = [
+  "medical",
+  "police",
+  "fire",
+  "disaster",
+  "other",
+] as const;
+
+export type EmergencyCategory = (typeof emergencyCategories)[number];
+
+export const emergencyCategoryLabels: Record<EmergencyCategory, string> = {
+  medical: "Medical",
+  police: "Police",
+  fire: "Fire",
+  disaster: "Disaster response",
+  other: "Other",
+};
 
 export interface EmergencyContact {
   id: string;
   label: string;
   number: string;
   description: string;
+  category?: EmergencyCategory;
 }
 
 export interface ImpactMetric {
