@@ -62,3 +62,5 @@ npm run build
 - [Workflows](docs/WORKFLOWS.md)
 - [Security and data boundary](docs/SECURITY.md)
 - [Implementation status](docs/IMPLEMENTATION_STATUS.md)
+- [Branding and PWA assets](docs/BRANDING.md)
+- [Developer handoff](docs/DEVELOPER_HANDOFF.md)

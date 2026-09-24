@@ -1,4 +1,5 @@
 "use client";
+/* eslint-disable @next/next/no-img-element -- User-selected blob previews cannot be routed through Next's image optimizer. */
 
 import Link from "next/link";
 import { FormEvent, useMemo, useState } from "react";

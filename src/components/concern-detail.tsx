@@ -1,4 +1,5 @@
 "use client";
+/* eslint-disable @next/next/no-img-element -- Evidence can be a user-provided data URL and must render without a remote optimizer. */
 
 import Link from "next/link";
 import { FormEvent, useEffect, useState } from "react";

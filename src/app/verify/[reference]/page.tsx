@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { CheckCircle2, ShieldCheck, XCircle } from "lucide-react";
 import { publicDocumentVerification } from "@/lib/demo-store";
+import { Brand } from "@/components/ui";
 
 export default async function VerifyPage({ params }: { params: Promise<{ reference: string }> }) {
   const { reference } = await params;
@@ -8,7 +9,7 @@ export default async function VerifyPage({ params }: { params: Promise<{ referen
   return (
     <main className="verify-page">
       <div className="verify-card">
-        <div className="brand-lockup compact"><span className="brand-mark">O</span><span>ONE</span></div>
+        <Brand compact />
         <div className={`verify-icon ${document ? "success" : "danger"}`}>{document ? <CheckCircle2 size={28} /> : <XCircle size={28} />}</div>
         <p className="eyebrow"><ShieldCheck size={14} /> Public document verification</p>
         <h1>{document ? "Document verified" : "Document not verified"}</h1>

@@ -1,10 +1,39 @@
+import Image from "next/image";
 import Link from "next/link";
 import type { Concern, ImpactMetric } from "@/lib/types";
-import { ArrowUpRight, BarChart3, ClipboardList, FileText, MapPin, Megaphone, ShieldCheck, Siren } from "lucide-react";
+import {
+  ArrowUpRight,
+  BarChart3,
+  ClipboardList,
+  FileText,
+  MapPin,
+  Megaphone,
+  ShieldCheck,
+  Siren,
+} from "lucide-react";
 import { categoryLabels, statusLabels } from "@/lib/types";
 
 export function Brand({ compact = false }: { compact?: boolean }) {
-  return <span className={`brand-lockup ${compact ? "compact" : ""}`}><span className="brand-mark">O</span><span>ONE</span></span>;
+  return (
+    <span
+      className={`brand-lockup ${compact ? "compact" : ""}`}
+      aria-label="ONE Community Services"
+    >
+      <Image
+        className="brand-logo"
+        src="/brand/system-logo.png"
+        alt=""
+        width={1278}
+        height={1230}
+        sizes={compact ? "28px" : "40px"}
+        priority
+      />
+      <span className="brand-wordmark">
+        <strong>ONE</strong>
+        {!compact && <small>Community services</small>}
+      </span>
+    </span>
+  );
 }
 
 export function StatusBadge({ status, urgent = false }: { status: Concern["status"]; urgent?: boolean }) {

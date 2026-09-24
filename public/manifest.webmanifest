@@ -1,10 +1,32 @@
 {
-  "name": "ONE Community Services",
+  "id": "/",
+  "name": "ONE — Community Services & Development Platform",
   "short_name": "ONE",
   "description": "Report. Request. Track. Connect.",
   "start_url": "/",
+  "scope": "/",
   "display": "standalone",
+  "orientation": "portrait-primary",
   "background_color": "#f7f9fb",
   "theme_color": "#0d223d",
-  "icons": []
+  "icons": [
+    {
+      "src": "/brand/system-logo.png",
+      "sizes": "1278x1230",
+      "type": "image/png",
+      "purpose": "any"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Report a concern",
+      "short_name": "Report",
+      "url": "/app/report"
+    },
+    {
+      "name": "My activity",
+      "short_name": "Activity",
+      "url": "/app/activity"
+    }
+  ]
 }

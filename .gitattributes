@@ -1,0 +1,5 @@
+# Keep source and documentation diffs stable across developer environments.
+* text=auto eol=lf
+
+# Branding assets are binary and must never undergo text conversion.
+*.png binary
