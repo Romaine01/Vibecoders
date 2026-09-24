@@ -42,4 +42,4 @@ The full runnable path is:
 5. Open `/admin/impact` to see the resolution rate, waste outcome, SDG 11 + SDG 12 impact records, and audit entries.
 6. Return to the resident activity detail to see the resolved timeline.
 
-The route-handler checks used for this workflow are documented in the final execution handoff; they use real HTTP calls against the production build, not mocked UI events.
+The route-handler checks used for this workflow use real HTTP calls against the production build, not mocked UI events.
