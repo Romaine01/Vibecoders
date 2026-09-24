@@ -34,6 +34,12 @@ export interface Profile {
   id: string;
   email: string;
   fullName: string;
+  firstName?: string;
+  middleName?: string;
+  lastName?: string;
+  mobileNumber?: string;
+  address?: string;
+  policyAcceptedAt?: string;
   role: UserRole;
   organizationName: string;
 }

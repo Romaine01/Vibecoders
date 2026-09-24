@@ -2,8 +2,9 @@
 /* eslint-disable @next/next/no-img-element -- User-selected blob previews cannot be routed through Next's image optimizer. */
 
 import Link from "next/link";
-import { FormEvent, useMemo, useState } from "react";
+import { FormEvent, useEffect, useMemo, useState } from "react";
 import { Check, ChevronLeft, ChevronRight, LocateFixed, MapPin, Upload, X } from "lucide-react";
+import { LocationPicker, type MapCoordinates } from "@/components/location-picker";
 import { categoryLabels, concernCategories, type ConcernCategory } from "@/lib/types";
 
 const steps = ["Category", "Details", "Location", "Evidence", "Review"];
@@ -15,30 +16,171 @@ export function ReportForm() {
   const [description, setDescription] = useState("");
   const [locationText, setLocationText] = useState("");
   const [urgency, setUrgency] = useState<"normal" | "urgent">("normal");
-  const [coordinates, setCoordinates] = useState<{ latitude?: number; longitude?: number }>({});
+  const [coordinates, setCoordinates] = useState<MapCoordinates | undefined>();
   const [files, setFiles] = useState<File[]>([]);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const [submittedReference, setSubmittedReference] = useState("");
   const previews = useMemo(() => files.map((file) => ({ file, url: URL.createObjectURL(file) })), [files]);
 
+  useEffect(() => () => previews.forEach(({ url }) => URL.revokeObjectURL(url)), [previews]);
+
   function canContinue() {
     if (step === 1) return title.trim().length >= 5 && description.trim().length >= 20;
     if (step === 2) return locationText.trim().length >= 3;
     return true;
   }
+
   function locate() {
-    if (!navigator.geolocation) { setError("Location is not available in this browser. Add a nearby landmark instead."); return; }
-    navigator.geolocation.getCurrentPosition((position) => { setCoordinates({ latitude: position.coords.latitude, longitude: position.coords.longitude }); setError(""); }, () => setError("We couldn't access your location. You can continue with a manual location."));
+    if (!navigator.geolocation) {
+      setError("Location is not available in this browser. Select a pin on the map or add a nearby landmark instead.");
+      return;
+    }
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        setCoordinates({ latitude: position.coords.latitude, longitude: position.coords.longitude });
+        setError("");
+      },
+      () => setError("We couldn't access your location. Select a point on the map or continue with a nearby landmark."),
+      { enableHighAccuracy: true, timeout: 10_000, maximumAge: 60_000 },
+    );
   }
-  function next() { if (!canContinue()) { setError(step === 1 ? "Add a title and a description of at least 20 characters." : "Add a clear location or landmark."); return; } setError(""); setStep((current) => Math.min(current + 1, steps.length - 1)); }
-  async function submit(event: FormEvent) {
-    event.preventDefault(); setLoading(true); setError("");
-    const data = new FormData(); data.append("category", category); data.append("title", title); data.append("description", description); data.append("locationText", locationText); data.append("urgency", urgency); if (coordinates.latitude !== undefined) data.append("latitude", String(coordinates.latitude)); if (coordinates.longitude !== undefined) data.append("longitude", String(coordinates.longitude)); files.forEach((file) => data.append("evidence", file));
-    const response = await fetch("/api/concerns", { method: "POST", body: data }); const result = await response.json().catch(() => ({})); setLoading(false);
-    if (!response.ok) { setError(result.error ?? "Unable to submit concern."); return; }
+
+  function selectFiles(nextFiles: File[]) {
+    const supported = nextFiles.filter((file) => file.type.startsWith("image/") && file.size <= 5 * 1024 * 1024).slice(0, 3);
+    if (supported.length !== nextFiles.length) setError("Use up to three image files, each smaller than 5 MB.");
+    else setError("");
+    setFiles(supported);
+  }
+
+  function next() {
+    if (!canContinue()) {
+      setError(step === 1 ? "Add a title and a description of at least 20 characters." : "Add a clear location or nearby landmark.");
+      return;
+    }
+    setError("");
+    setStep((current) => Math.min(current + 1, steps.length - 1));
+  }
+
+  async function submit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    setLoading(true);
+    setError("");
+    const data = new FormData();
+    data.append("category", category);
+    data.append("title", title);
+    data.append("description", description);
+    data.append("locationText", locationText);
+    data.append("urgency", urgency);
+    if (coordinates) {
+      data.append("latitude", String(coordinates.latitude));
+      data.append("longitude", String(coordinates.longitude));
+    }
+    files.forEach((file) => data.append("evidence", file));
+
+    const response = await fetch("/api/concerns", { method: "POST", body: data });
+    const result = await response.json().catch(() => ({}));
+    setLoading(false);
+    if (!response.ok) {
+      setError(result.error ?? "Unable to submit concern. Please try again.");
+      return;
+    }
     setSubmittedReference(result.concern.reference);
   }
-  if (submittedReference) return <div className="form-card"><div className="success-banner"><Check size={20} color="#13795b" /><h2>Concern submitted</h2><p className="muted">Your report is now in the review queue. You can follow every status change from My activity.</p><span className="reference-code">{submittedReference}</span><div className="hero-actions"><Link className="button primary" href={`/app/concerns/${submittedReference}`}>View tracking</Link><Link className="button secondary" href="/app">Return home</Link></div></div></div>;
-  return <div className="form-card"><div className="stepper" aria-label="Concern report steps">{steps.map((label, index) => <div key={label} style={{ display: "contents" }}><div className={`step ${index === step ? "active" : index < step ? "done" : ""}`}><span className="step-number">{index < step ? <Check size={13} /> : index + 1}</span><span>{label}</span></div>{index < steps.length - 1 && <span className="step-line" />}</div>)}</div>{error && <div className="notice error" role="alert"><X size={16} />{error}</div>}<form onSubmit={submit}>{step === 0 && <div className="form-stack"><div><h2>What needs attention?</h2><p className="muted small">Choose the category that best describes the concern.</p></div><div className="choice-grid">{concernCategories.map((item) => <label className="choice" key={item}><input type="radio" name="category" checked={category === item} onChange={() => setCategory(item)} /><span><strong>{categoryLabels[item]}</strong><small>{item === "waste_management" ? "Collection, dumping, drainage, or litter" : item === "roads_infrastructure" ? "Roads, paths, lighting, or public facilities" : "Public-service concern for the community"}</small></span></label>)}</div></div>}{step === 1 && <div className="form-stack"><div><h2>Tell us what happened</h2><p className="muted small">Specific details help the right team act faster.</p></div><div className="field"><label htmlFor="title">Short title</label><input id="title" value={title} onChange={(event) => setTitle(event.target.value)} placeholder="e.g. Garbage accumulating near a drainage canal" /></div><div className="field"><label htmlFor="description">Description</label><textarea id="description" value={description} onChange={(event) => setDescription(event.target.value)} placeholder="What did you observe? Who or what is affected?" /><small>{description.length}/3000</small></div><div className="field"><label>Urgency</label><div className="choice-grid"><label className="choice"><input type="radio" checked={urgency === "normal"} onChange={() => setUrgency("normal")} /><span><strong>Normal</strong><small>Needs review through the standard queue.</small></span></label><label className="choice"><input type="radio" checked={urgency === "urgent"} onChange={() => setUrgency("urgent")} /><span><strong>Urgent</strong><small>Immediate risk to people, property, or health.</small></span></label></div></div></div>}{step === 2 && <div className="form-stack"><div><h2>Where is it?</h2><p className="muted small">Use your current location or add a landmark manually.</p></div><div className="field"><label htmlFor="locationText">Location or nearby landmark</label><textarea id="locationText" value={locationText} onChange={(event) => setLocationText(event.target.value)} placeholder="e.g. Beside the public market, near the east drainage canal" /></div><div className="location-row"><button type="button" className="button secondary" onClick={locate}><LocateFixed size={16} /> Use current location</button>{coordinates.latitude !== undefined && <span className="notice success"><MapPin size={15} /> Location captured</span>}</div><small className="muted">Your coordinates are only attached to this concern to help the operations team locate it.</small></div>}{step === 3 && <div className="form-stack"><div><h2>Add photo evidence</h2><p className="muted small">Optional, but useful for review. Add up to three images under 5 MB each.</p></div><label className="file-drop"><Upload size={20} color="#187f7a" /><strong>Choose photos from your device</strong><span>JPG, PNG, or another image format</span><input type="file" accept="image/*" multiple onChange={(event) => setFiles(Array.from(event.target.files ?? []).slice(0, 3))} /></label>{previews.length > 0 && <div className="preview-grid">{previews.map(({ file, url }) => <div key={file.name}><img src={url} alt={`Evidence preview: ${file.name}`} /><small className="muted small">{file.name}</small></div>)}</div>}</div>}{step === 4 && <div className="form-stack"><div><h2>Review and submit</h2><p className="muted small">Make sure the details are clear before sending this to the review queue.</p></div><dl className="review-block"><div className="review-row"><dt>Category</dt><dd>{categoryLabels[category]}</dd></div><div className="review-row"><dt>Title</dt><dd>{title}</dd></div><div className="review-row"><dt>Description</dt><dd>{description}</dd></div><div className="review-row"><dt>Location</dt><dd>{locationText}{coordinates.latitude !== undefined ? " · GPS captured" : ""}</dd></div><div className="review-row"><dt>Urgency</dt><dd>{urgency === "urgent" ? "Urgent" : "Normal"}</dd></div><div className="review-row"><dt>Evidence</dt><dd>{files.length ? `${files.length} image${files.length > 1 ? "s" : ""}` : "None attached"}</dd></div></dl><div className="notice"><MapPin size={16} />Submitting creates a reference number and a timestamped timeline you can follow.</div></div>}<div className="form-actions">{step > 0 ? <button type="button" className="button secondary" onClick={() => { setError(""); setStep((current) => current - 1); }}><ChevronLeft size={16} /> Back</button> : <Link className="button secondary" href="/app">Cancel</Link>}{step < steps.length - 1 ? <button type="button" className="button primary" onClick={next}>Continue <ChevronRight size={16} /></button> : <button type="submit" className="button primary" disabled={loading}>{loading ? "Submitting…" : "Submit concern"}<Check size={16} /></button>}</div></form></div>;
+
+  if (submittedReference) {
+    return (
+      <div className="form-card">
+        <div className="success-banner">
+          <Check size={20} color="#13795b" />
+          <h2>Concern submitted</h2>
+          <p className="muted">Your report is now in the review queue. You can follow every status change from My activity.</p>
+          <span className="reference-code">{submittedReference}</span>
+          <div className="hero-actions">
+            <Link className="button primary" href={`/app/concerns/${submittedReference}`}>View tracking</Link>
+            <Link className="button secondary" href="/app/activity">View my activity</Link>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="form-card">
+      <div className="stepper" aria-label="Concern report steps">
+        {steps.map((label, index) => (
+          <div key={label} className="stepper-item">
+            <div className={`step ${index === step ? "active" : index < step ? "done" : ""}`}>
+              <span className="step-number">{index < step ? <Check size={13} /> : index + 1}</span><span>{label}</span>
+            </div>
+            {index < steps.length - 1 && <span className="step-line" />}
+          </div>
+        ))}
+      </div>
+      {error && <div className="notice error" role="alert"><X size={16} />{error}</div>}
+
+      <form onSubmit={submit}>
+        {step === 0 && (
+          <div className="form-stack">
+            <div><h2>What needs attention?</h2><p className="muted small">Choose the category that best describes the concern.</p></div>
+            <div className="choice-grid">
+              {concernCategories.map((item) => (
+                <label className="choice" key={item}>
+                  <input type="radio" name="category" checked={category === item} onChange={() => setCategory(item)} />
+                  <span><strong>{categoryLabels[item]}</strong><small>{item === "waste_management" ? "Collection, dumping, drainage, or litter" : item === "roads_infrastructure" ? "Roads, paths, lighting, or public facilities" : "Public-service concern for the community"}</small></span>
+                </label>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {step === 1 && (
+          <div className="form-stack">
+            <div><h2>Tell us what happened</h2><p className="muted small">Specific details help the right team act faster.</p></div>
+            <div className="field"><label htmlFor="title">Short title</label><input id="title" value={title} onChange={(event) => setTitle(event.target.value)} placeholder="e.g. Garbage accumulating near a drainage canal" /></div>
+            <div className="field"><label htmlFor="description">Description</label><textarea id="description" value={description} onChange={(event) => setDescription(event.target.value)} placeholder="What did you observe? Who or what is affected?" /><small>{description.length}/3000</small></div>
+            <div className="field"><label>Urgency</label><div className="choice-grid"><label className="choice"><input type="radio" checked={urgency === "normal"} onChange={() => setUrgency("normal")} /><span><strong>Normal</strong><small>Needs review through the standard queue.</small></span></label><label className="choice"><input type="radio" checked={urgency === "urgent"} onChange={() => setUrgency("urgent")} /><span><strong>Urgent</strong><small>Immediate risk to people, property, or health.</small></span></label></div></div>
+          </div>
+        )}
+
+        {step === 2 && (
+          <div className="form-stack">
+            <div><h2>Where is it?</h2><p className="muted small">Select an exact point on the Tankulan map, then add a landmark so the team has useful context.</p></div>
+            <div className="field"><label htmlFor="locationText">Location or nearby landmark</label><textarea id="locationText" value={locationText} onChange={(event) => setLocationText(event.target.value)} placeholder="e.g. Beside the public market, near the east drainage canal" /></div>
+            <div className="location-row"><button type="button" className="button secondary" onClick={locate}><LocateFixed size={16} /> Use current location</button>{coordinates && <span className="notice success"><MapPin size={15} /> Coordinates captured</span>}</div>
+            <LocationPicker value={coordinates} onChange={(nextCoordinates) => { setCoordinates(nextCoordinates); setError(""); }} />
+            <small className="muted">Coordinates are attached only to this concern to help the operations team locate it.</small>
+          </div>
+        )}
+
+        {step === 3 && (
+          <div className="form-stack">
+            <div><h2>Add photo evidence</h2><p className="muted small">Optional, but useful for review. Add up to three images under 5 MB each.</p></div>
+            <label className="file-drop"><Upload size={20} color="#187f7a" /><strong>Choose photos from your device</strong><span>JPG, PNG, or another image format</span><input type="file" accept="image/*" multiple onChange={(event) => selectFiles(Array.from(event.target.files ?? []))} /></label>
+            {previews.length > 0 && <div className="preview-grid">{previews.map(({ file, url }) => <div key={file.name}><img src={url} alt={`Evidence preview: ${file.name}`} /><small className="muted small">{file.name}</small></div>)}</div>}
+          </div>
+        )}
+
+        {step === 4 && (
+          <div className="form-stack">
+            <div><h2>Review and submit</h2><p className="muted small">Make sure the details are clear before sending this to the review queue.</p></div>
+            <dl className="review-block">
+              <div className="review-row"><dt>Category</dt><dd>{categoryLabels[category]}</dd></div>
+              <div className="review-row"><dt>Title</dt><dd>{title}</dd></div>
+              <div className="review-row"><dt>Description</dt><dd>{description}</dd></div>
+              <div className="review-row"><dt>Location</dt><dd>{locationText}{coordinates ? ` · ${coordinates.latitude.toFixed(5)}, ${coordinates.longitude.toFixed(5)}` : " · Landmark only"}</dd></div>
+              <div className="review-row"><dt>Urgency</dt><dd>{urgency === "urgent" ? "Urgent" : "Normal"}</dd></div>
+              <div className="review-row"><dt>Evidence</dt><dd>{files.length ? `${files.length} image${files.length > 1 ? "s" : ""}` : "None attached"}</dd></div>
+            </dl>
+            <div className="notice"><MapPin size={16} />Submitting creates a reference number and a timestamped timeline you can follow.</div>
+          </div>
+        )}
+
+        <div className="form-actions">
+          {step > 0 ? <button type="button" className="button secondary" onClick={() => { setError(""); setStep((current) => current - 1); }}><ChevronLeft size={16} /> Back</button> : <Link className="button secondary" href="/app">Cancel</Link>}
+          {step < steps.length - 1 ? <button type="button" className="button primary" onClick={next}>Continue <ChevronRight size={16} /></button> : <button type="submit" className="button primary" disabled={loading}>{loading ? "Submitting…" : "Submit concern"}<Check size={16} /></button>}
+        </div>
+      </form>
+    </div>
+  );
 }

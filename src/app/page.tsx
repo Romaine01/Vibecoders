@@ -9,6 +9,8 @@ import {
   MapPin,
   ShieldCheck,
 } from "lucide-react";
+import { InstallOneButton } from "@/components/install-one";
+import { PolicyLinks } from "@/components/policy-dialog";
 import { Brand } from "@/components/ui";
 
 export default function LandingPage() {
@@ -23,13 +25,16 @@ export default function LandingPage() {
             <a href="#trust">Trust & safety</a>
           </nav>
           <div className="header-actions">
+            <InstallOneButton className="button ghost install-cta" />
             <Link className="button secondary" href="/login">Sign in</Link>
             <Link className="button primary" href="/register">Get started <ArrowRight size={15} /></Link>
           </div>
         </div>
       </header>
 
-      <section className="hero">
+      <section className="hero hero-photo">
+        <Image className="hero-background" src="/images/tankulan.jpg" alt="" fill priority sizes="100vw" />
+        <div className="hero-overlay" />
         <div className="page-width hero-grid">
           <div>
             <p className="eyebrow"><span className="eyebrow-dot" /> Community services, connected</p>
@@ -55,6 +60,7 @@ export default function LandingPage() {
             </div>
           </div>
         </div>
+        <span className="photo-credit">CTTO</span>
       </section>
 
       <section className="landing-section" id="how-it-works">
@@ -95,7 +101,7 @@ export default function LandingPage() {
 
       <footer className="landing-footer">
         <div className="page-width footer-grid">
-          <div className="footer-product"><Brand /><p>ONE — Community Services &amp; Development Platform</p><small>Report. Request. Track. Connect.</small></div>
+          <div className="footer-product"><Brand /><p>ONE — Community Services &amp; Development Platform</p><small>Report. Request. Track. Connect.</small><div className="footer-links"><Link href="/install">Install ONE</Link><PolicyLinks /></div></div>
           <div className="footer-community">
             <p>Community technology partners</p>
             <div className="footer-partner-logos">

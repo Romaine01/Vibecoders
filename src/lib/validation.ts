@@ -16,6 +16,22 @@ export const documentSchema = z.object({
   purpose: z.string().trim().min(5).max(500),
 });
 
+export const registrationSchema = z.object({
+  firstName: z.string().trim().min(2).max(80),
+  middleName: z.string().trim().max(80).optional().default(""),
+  lastName: z.string().trim().min(2).max(80),
+  email: z.string().trim().email().max(254),
+  mobileNumber: z.string().trim().min(7).max(32),
+  address: z.string().trim().min(5).max(240),
+  password: z.string().min(8).max(128),
+  confirmPassword: z.string().min(8).max(128),
+  acceptedPolicies: z.literal(true),
+}).superRefine((value, context) => {
+  if (value.password !== value.confirmPassword) {
+    context.addIssue({ code: "custom", path: ["confirmPassword"], message: "Passwords do not match." });
+  }
+});
+
 export const adminActionSchema = z.object({
   action: z.enum(["receive", "assign", "start", "resolve", "reject"]),
   note: z.string().trim().max(2000).optional().default(""),

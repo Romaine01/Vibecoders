@@ -22,6 +22,7 @@ interface DemoStore {
   auditLogs: { id: string; actorId: string; action: string; entityType: string; entityId: string; metadata: Record<string, unknown>; createdAt: string }[];
   impactRecords: { id: string; concernId: string; sdgCode: string; outcome: string; recordedBy: string; createdAt: string }[];
   sessions: Map<string, Profile>;
+  credentials: Map<string, string>;
 }
 
 const runtime = globalThis as typeof globalThis & { __oneDemoStore?: DemoStore };
@@ -34,6 +35,18 @@ function createInitialStore(): DemoStore {
         email: "admin@one.local",
         fullName: "ONE Operations",
         role: "admin",
+        organizationName: process.env.NEXT_PUBLIC_ORGANIZATION_NAME ?? "ONE Community Services",
+      },
+      {
+        id: "resident-demo",
+        email: "resident@one.local",
+        fullName: "Alex Rivera",
+        firstName: "Alex",
+        lastName: "Rivera",
+        mobileNumber: "+63 917 000 0000",
+        address: "Kihare, Tankulan, Manolo Fortich, Bukidnon",
+        policyAcceptedAt: new Date().toISOString(),
+        role: "resident",
         organizationName: process.env.NEXT_PUBLIC_ORGANIZATION_NAME ?? "ONE Community Services",
       },
     ],
@@ -63,6 +76,7 @@ function createInitialStore(): DemoStore {
     auditLogs: [],
     impactRecords: [],
     sessions: new Map(),
+    credentials: new Map([["resident@one.local", "demo-resident"]]),
   };
 }
 
@@ -85,18 +99,39 @@ export function getProfileByEmail(email: string) {
   return store.profiles.find((profile) => profile.email.toLowerCase() === email.toLowerCase());
 }
 
-export function upsertResident(email: string, fullName: string) {
-  const existing = getProfileByEmail(email);
-  if (existing) return existing;
+export function createResident(input: {
+  email: string;
+  password: string;
+  firstName: string;
+  middleName?: string;
+  lastName: string;
+  mobileNumber: string;
+  address: string;
+}) {
+  const fullName = [input.firstName, input.middleName, input.lastName].filter(Boolean).join(" ");
   const profile: Profile = {
     id: `resident-${crypto.randomUUID()}`,
-    email,
+    email: input.email,
     fullName,
+    firstName: input.firstName,
+    middleName: input.middleName || undefined,
+    lastName: input.lastName,
+    mobileNumber: input.mobileNumber,
+    address: input.address,
+    policyAcceptedAt: now(),
     role: "resident",
     organizationName: process.env.NEXT_PUBLIC_ORGANIZATION_NAME ?? "ONE Community Services",
   };
   store.profiles.push(profile);
+  // This only exists in the explicit in-memory development adapter. Production uses Supabase Auth.
+  store.credentials.set(input.email.toLowerCase(), input.password);
   return profile;
+}
+
+export function authenticateResident(email: string, password: string) {
+  const profile = getProfileByEmail(email);
+  if (!profile || profile.role !== "resident") return null;
+  return store.credentials.get(email.toLowerCase()) === password ? profile : null;
 }
 
 export function createSession(profile: Profile) {
@@ -286,6 +321,8 @@ export function publicDocumentVerification(reference: string) {
 export const demoCredentials = {
   adminEmail: "admin@one.local",
   adminPassword: "demo-admin",
+  residentEmail: "resident@one.local",
+  residentPassword: "demo-resident",
 };
 
 export const allowedDocumentTypes = documentTypes;

@@ -7,7 +7,7 @@ npm install
 npm run dev
 ```
 
-Use `http://localhost:3000`. The local demo adapter resets whenever the server restarts. Register any resident account at `/register`; the demo admin credentials are documented in [README.md](../README.md).
+Use `http://localhost:3000`. The local demo adapter resets whenever the server restarts. Use `resident@one.local` / `demo-resident` for resident testing or `admin@one.local` / `demo-admin` for operations testing. New resident registration requires Terms and Privacy acceptance.
 
 ## Required pre-commit check
 
@@ -21,8 +21,8 @@ This runs ESLint, generates Next route types, performs TypeScript checking, and 
 
 | Area | Routes |
 | --- | --- |
-| Public | `/`, `/login`, `/register`, `/admin/login`, `/verify/[reference]` |
-| Resident | `/app`, `/app/report`, `/app/activity`, `/app/concerns/[reference]`, `/app/documents`, `/app/announcements`, `/app/emergency` |
+| Public | `/`, `/login`, `/register`, `/install`, `/admin/login`, `/verify/[reference]` |
+| Resident | `/app`, `/app/report`, `/app/activity`, `/app/concerns/[reference]`, `/app/documents`, `/app/documents/[reference]`, `/app/announcements`, `/app/emergency` |
 | Admin | `/admin`, `/admin/concerns`, `/admin/concerns/[reference]`, `/admin/documents`, `/admin/impact`, `/admin/content`, `/admin/settings` |
 | API | `/api/auth/*`, `/api/concerns/*`, `/api/documents/*`, `/api/announcements`, `/api/emergency`, `/api/impact` |
 
@@ -34,3 +34,4 @@ Resident and admin layouts enforce their role boundaries. Put a public route out
 - Apply `supabase/migrations/001_one_schema.sql`, validate RLS with resident/admin fixtures, and configure private Storage.
 - Add production credentials only through deployment environment variables; never commit `.env.local`.
 - Test the installed PWA on real iOS and Android hardware, especially the safe-area header, input keyboard behavior, install icon, and theme color.
+- The Tankulan satellite tiles are supplied by Esri at runtime. Confirm pan, zoom, pin placement, imagery availability, and browser geolocation permission on a real phone before deployment.

@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useState } from "react";
-import { BarChart3, ClipboardList, FileText, Home, LogOut, Menu, Megaphone, Settings, ShieldAlert, X } from "lucide-react";
+import { BarChart3, ClipboardList, Download, FileText, Home, LogOut, Menu, Megaphone, Settings, ShieldAlert, X } from "lucide-react";
 import type { Profile } from "@/lib/types";
 import { Brand } from "@/components/ui";
 
@@ -14,6 +14,7 @@ const residentLinks = [
   { href: "/app/documents", label: "Document requests", icon: FileText },
   { href: "/app/announcements", label: "Announcements", icon: Megaphone },
   { href: "/app/emergency", label: "Emergency resources", icon: ShieldAlert },
+  { href: "/install", label: "Install ONE", icon: Download },
 ];
 
 const adminLinks = [

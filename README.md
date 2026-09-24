@@ -23,10 +23,16 @@ Open `http://localhost:3000`.
 
 The local demo mode uses:
 
-- Resident: register at `/register` with any email and a password of at least four characters.
+- Resident: `/login` with `resident@one.local` / `demo-resident`, or create a new resident account at `/register` using an unused email, a password of at least eight characters, and the required policy agreement.
 - Admin: `/admin/login` with `admin@one.local` / `demo-admin`.
 
 The demo store is process-local and resets when the server restarts. It is intentionally not a substitute for production persistence.
+
+## Resident location and PWA testing
+
+- Concern reporting includes a satellite location picker centered on Kihare, Tankulan, Manolo Fortich. It needs an internet connection for imagery; residents can still provide a landmark or use browser geolocation.
+- Open `/install` to test the PWA installation experience. Chromium browsers use the native install prompt when available; iPhone and iPad receive Safari Add to Home Screen instructions.
+- The minimal service worker intentionally keeps the app online-first. It enables installation without introducing unverified offline data synchronization.
 
 ## Production configuration
 

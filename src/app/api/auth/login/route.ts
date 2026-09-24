@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { createSession, demoCredentials, getProfileByEmail, upsertResident } from "@/lib/demo-store";
+import { authenticateResident, createSession, demoCredentials, getProfileByEmail } from "@/lib/demo-store";
 import { sessionCookieName } from "@/lib/auth";
 
 export async function POST(request: Request) {
@@ -18,7 +18,8 @@ export async function POST(request: Request) {
 
   const profile = role === "admin"
     ? getProfileByEmail(email)
-    : upsertResident(email, String(body.fullName ?? email.split("@")[0]).trim() || "Community resident");
+    : authenticateResident(email, password);
+  if (role === "resident" && !profile) return NextResponse.json({ error: "Incorrect email or password." }, { status: 401 });
   if (!profile || profile.role !== role) return NextResponse.json({ error: "This account is not available in the selected workspace." }, { status: 403 });
 
   const response = NextResponse.json({ user: profile });
