@@ -1,7 +1,8 @@
 import { NextResponse } from "next/server";
+import { cookies } from "next/headers";
 import { authenticateResident, demoCredentials, getProfileByEmail } from "@/lib/demo-store";
 import { sessionCookieName } from "@/lib/auth";
-import { createDemoSession } from "@/lib/demo-session";
+import { authenticateDemoAccount, createDemoSession, demoAccountCookieName } from "@/lib/demo-session";
 import { createSupabaseServerClient, supabaseConfigured } from "@/lib/supabase/server";
 import { getSupabaseProfile } from "@/lib/supabase/profile";
 
@@ -28,9 +29,10 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Use the admin sign-in for this account." }, { status: 403 });
   }
 
+  const cookieStore = await cookies();
   const profile = role === "admin"
     ? getProfileByEmail(email)
-    : authenticateResident(email, password);
+    : authenticateResident(email, password) ?? authenticateDemoAccount(cookieStore.get(demoAccountCookieName)?.value, email, password);
   if (role === "resident" && !profile) return NextResponse.json({ error: "Incorrect email or password." }, { status: 401 });
   if (!profile || profile.role !== role) return NextResponse.json({ error: "This account is not available in the selected workspace." }, { status: 403 });
 

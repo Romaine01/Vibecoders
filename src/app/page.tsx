@@ -37,7 +37,7 @@ export default function LandingPage() {
         <Image className="hero-background" src="/images/tankulan.jpg" alt="" fill priority sizes="100vw" />
         <div className="hero-overlay" />
         <div className="page-width hero-grid">
-          <div>
+          <div className="hero-content">
             <h1>Make community action visible.</h1>
             <p className="hero-copy">ONE gives residents a clear way to report needs, request public documents, and follow each outcome from first submission to measurable impact.</p>
             <div className="hero-actions">

@@ -8,7 +8,7 @@ It gives residents a private workspace for concerns and document requests, and g
 
 - Next.js 16 App Router, React 19, TypeScript, `next/font` Inter, Lucide React, Zod, and Framer Motion for reduced-motion-aware interface transitions.
 - Authentication uses Supabase Auth and cookie-backed sessions whenever the Supabase environment variables are configured. Without them, the app stays in an explicit local demo mode so the UI can run without external credentials; operational records still use the local demo store until the data adapter is enabled.
-- The fallback demo login uses a signed, stateless cookie so the demo accounts remain usable across serverless instances. Set `ONE_SESSION_SECRET` for any shared demo deployment; use Supabase Auth for production accounts.
+- The fallback demo login uses signed, stateless cookies so demo accounts remain usable across serverless instances. New demo registrations keep a password hash in an HttpOnly cookie for seven days, so they can sign in again from the same browser. They do not create durable, cross-device accounts. Set `ONE_SESSION_SECRET` for any shared demo deployment; use Supabase Auth for production accounts.
 - `supabase/migrations/001_one_schema.sql` defines the production PostgreSQL entities, RLS foundation, role function, and ownership policies.
 - Supabase packages and environment variables are included as the production integration boundary; the adapter should be enabled before deploying a multi-instance production environment.
 - No reference-application logos, seals, names, or location-specific assets are used.
@@ -27,7 +27,7 @@ The local demo mode uses:
 - Resident: `/login` with `resident@one.local` / `demo-resident`, or create a new resident account at `/register` using an unused email, a password of at least eight characters, and the required policy agreement.
 - Admin: `/admin/login` with `admin@one.local` / `demo-admin`.
 
-The demo store is process-local and resets when the server restarts. It is intentionally not a substitute for production persistence.
+The demo store is process-local and resets when the server restarts. Demo registrations can sign in again from the same browser while its account cookie remains, but concern and document records are still process-local. It is intentionally not a substitute for production persistence.
 
 ## Resident location and PWA testing
 

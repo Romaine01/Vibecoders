@@ -14,8 +14,8 @@ export async function getCurrentUser(): Promise<Profile | null> {
     return user ? getSupabaseProfile(supabase, user) : null;
   }
   const cookieStore = await cookies();
-  const profileId = getDemoSession(cookieStore.get(sessionCookieName)?.value);
-  return profileId ? getProfileById(profileId) ?? null : null;
+  const session = getDemoSession(cookieStore.get(sessionCookieName)?.value);
+  return session ? getProfileById(session.profileId) ?? session.profile ?? null : null;
 }
 
 export async function requireUser(role?: UserRole) {

@@ -11,6 +11,7 @@
 - Public verification returns safe document metadata only.
 - Service-role credentials are not referenced in client components.
 - Fallback demo sessions are signed and stateless for serverless compatibility; they are not a replacement for Supabase Auth or durable user data.
+- Newly registered demo users have a signed, HttpOnly, browser-bound account cookie containing a salted password hash, not a plaintext password. This supports same-browser sign-in for seven days; it does not provide a global user registry or cross-device access.
 
 ## Production requirements before deployment
 

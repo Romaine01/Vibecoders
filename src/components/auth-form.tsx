@@ -14,6 +14,7 @@ export function AuthForm({ mode }: { mode: AuthMode }) {
   const searchParams = useSearchParams();
   const isRegistration = mode === "register";
   const isAdmin = mode === "admin";
+  const isDemoMode = !process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
   const [email, setEmail] = useState(isAdmin ? "admin@one.local" : "");
   const [password, setPassword] = useState(isAdmin ? "demo-admin" : "");
   const [confirmPassword, setConfirmPassword] = useState("");
@@ -166,10 +167,12 @@ export function AuthForm({ mode }: { mode: AuthMode }) {
         </form>
 
         {isAdmin ? (
-          <div className="demo-hint"><strong>Local demo access</strong><br />admin@one.local · demo-admin<br /><span>Production must use Supabase Auth and server-side role validation.</span></div>
+          isDemoMode && <div className="demo-hint"><strong>Demo access</strong><br />admin@one.local · demo-admin</div>
         ) : (
           <>
-            {!isRegistration && <div className="demo-hint"><strong>Local testing account</strong><br />resident@one.local · demo-resident</div>}
+            {isDemoMode && (isRegistration
+              ? <div className="demo-hint"><strong>Demo registration</strong><br />Your account stays in this browser for seven days. Use this browser to sign in again.</div>
+              : <div className="demo-hint"><strong>Demo account</strong><br />resident@one.local · demo-resident</div>)}
             <p className="auth-foot">
               {isRegistration ? "Already have an account? " : "Need an account? "}
               <Link href={isRegistration ? "/login" : "/register"}>{isRegistration ? "Sign in" : "Register"}</Link>
