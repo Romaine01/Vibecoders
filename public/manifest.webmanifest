@@ -1,0 +1,10 @@
+{
+  "name": "ONE Community Services",
+  "short_name": "ONE",
+  "description": "Report. Request. Track. Connect.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#f7f9fb",
+  "theme_color": "#0d223d",
+  "icons": []
+}

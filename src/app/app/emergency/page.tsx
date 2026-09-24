@@ -1,0 +1,4 @@
+import { PhoneCall, ShieldAlert } from "lucide-react";
+import { store } from "@/lib/demo-store";
+
+export default function EmergencyPage() { return <main className="page-main"><div className="page-header"><div><p className="eyebrow">Safety & support</p><h1>Emergency resources</h1><p>For immediate danger, contact emergency services first. These community contacts support follow-up and guidance.</p></div><ShieldAlert color="var(--danger)" /></div><div className="card card-pad"><div className="contact-list">{store.emergencyContacts.map((contact) => <div className="contact-row" key={contact.id}><span className="feature-icon" style={{ background: "#fcebea", color: "var(--danger)" }}><PhoneCall size={17} /></span><div><h3>{contact.label}</h3><p>{contact.description}</p></div><a className="contact-number" href={`tel:${contact.number}`}>{contact.number}</a></div>)}</div></div></main>; }
