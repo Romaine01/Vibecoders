@@ -6,7 +6,7 @@ It gives residents a private workspace for concerns and document requests, and g
 
 ## Current implementation
 
-- Next.js 16 App Router, React 19, TypeScript, `next/font` Inter, Lucide React, Zod.
+- Next.js 16 App Router, React 19, TypeScript, `next/font` Inter, Lucide React, Zod, and Framer Motion for reduced-motion-aware interface transitions.
 - Resident and admin workflows are implemented as route handlers backed by an explicit in-process demo store so the complete golden demo runs without external credentials.
 - `supabase/migrations/001_one_schema.sql` defines the production PostgreSQL entities, RLS foundation, role function, and ownership policies.
 - Supabase packages and environment variables are included as the production integration boundary; the adapter should be enabled before deploying a multi-instance production environment.
@@ -61,6 +61,12 @@ npm run typecheck
 npm run lint
 npm run build
 ```
+
+## UI behavior
+
+- Forms use browser constraints for common input mistakes and server-side validation remains the source of truth.
+- Resident pages provide loading boundaries, visible return paths, keyboard focus states, and high-contrast input, card, and status treatments.
+- Motion is intentionally restrained: page entry, metric/action-card feedback, and loading indicators honor the operating system's reduced-motion preference.
 
 ## Documentation
 

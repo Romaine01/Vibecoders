@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { FormEvent, useEffect, useState } from "react";
-import { ArrowUpRight, Check, FileText, X } from "lucide-react";
+import { ArrowUpRight, Check, FileText, LoaderCircle, X } from "lucide-react";
 import type { DocumentRequest, Profile } from "@/lib/types";
 import { documentStatusLabels, documentTypes } from "@/lib/types";
 import { documentTypeDetail } from "@/lib/document-catalog";
@@ -31,13 +31,14 @@ export function DocumentCenter() {
       fetch("/api/documents", { cache: "no-store" }).then((response) => response.json()),
       fetch("/api/auth/me", { cache: "no-store" }).then((response) => response.json()),
     ]).then(([documents, me]) => {
+      if (documents.error) setError(documents.error);
       if (documents.requests) setRequests(documents.requests);
       if (Array.isArray(documents.documentTypes) && documents.documentTypes.length) {
         setTypes(documents.documentTypes);
         setDocumentType((current) => current || documents.documentTypes[0]);
       }
       if (me.user) setProfile(me.user);
-    });
+    }).catch(() => setError("We could not load document requests. Check your connection and try again."));
   }, []);
 
   function next() {
@@ -58,21 +59,26 @@ export function DocumentCenter() {
     event.preventDefault();
     setLoading(true);
     setError("");
-    const response = await fetch("/api/documents", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ documentType, purpose }),
-    });
-    const result = await response.json().catch(() => ({}));
-    setLoading(false);
-    if (!response.ok) {
-      setError(result.error ?? "Unable to submit document request.");
-      return;
+    try {
+      const response = await fetch("/api/documents", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ documentType, purpose }),
+      });
+      const result = await response.json().catch(() => ({}));
+      if (!response.ok) {
+        setError(result.error ?? "Unable to submit document request.");
+        return;
+      }
+      setRequests((current) => [result.request, ...current]);
+      setSubmittedReference(result.request.reference);
+      setStep(steps.length - 1);
+      setMessage(`Request ${result.request.reference} submitted.`);
+    } catch {
+      setError("We could not submit this request. Check your connection and try again.");
+    } finally {
+      setLoading(false);
     }
-    setRequests((current) => [result.request, ...current]);
-    setSubmittedReference(result.request.reference);
-    setStep(steps.length - 1);
-    setMessage(`Request ${result.request.reference} submitted.`);
   }
 
   function reset() {
@@ -194,6 +200,8 @@ export function DocumentCenter() {
                       value={purpose}
                       onChange={(event) => setPurpose(event.target.value)}
                       placeholder="e.g. Employment requirement for a job application"
+                      minLength={5}
+                      maxLength={500}
                       required
                     />
                     <small>{purpose.trim().length}/500 characters</small>
@@ -242,7 +250,7 @@ export function DocumentCenter() {
                       Back
                     </button>
                     <button className="button primary" type="submit" disabled={loading}>
-                      {loading ? "Submitting…" : "Submit request"}
+                      {loading ? <><LoaderCircle className="button-spinner" size={16} />Submitting…</> : "Submit request"}
                     </button>
                   </div>
                 </>

@@ -17,6 +17,12 @@ npm run check
 
 This runs ESLint, generates Next route types, performs TypeScript checking, and builds the production route graph.
 
+## UI conventions
+
+- Keep control text and placeholder text readable against white card surfaces; preserve the shared input focus, invalid, and disabled states in `src/app/globals.css`.
+- Use the existing `PageReveal` component for a route-level entrance only when it improves orientation. Do not add motion that obscures submissions, error messages, or navigation; the component respects reduced-motion settings.
+- Resident sections include route loading boundaries. Keep mutations visibly pending and always return the control to an enabled state when a network request fails.
+
 ## Route ownership
 
 | Area | Routes |

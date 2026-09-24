@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { FormEvent, useState } from "react";
-import { ArrowRight, Eye, EyeOff, LockKeyhole } from "lucide-react";
+import { ArrowLeft, ArrowRight, Eye, EyeOff, LoaderCircle, LockKeyhole } from "lucide-react";
 import { PolicyLinks } from "@/components/policy-dialog";
 import { Brand } from "@/components/ui";
 
@@ -45,21 +45,26 @@ export function AuthForm({ mode }: { mode: AuthMode }) {
     const payload = isRegistration
       ? { firstName, middleName, lastName, email, mobileNumber, address, password, confirmPassword, acceptedPolicies }
       : { email, password, role: isAdmin ? "admin" : "resident" };
-    const response = await fetch(endpoint, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(payload),
-    });
-    const data = await response.json().catch(() => ({}));
-    setLoading(false);
-    if (!response.ok) {
-      setError(data.error ?? "Unable to continue. Please try again.");
-      return;
-    }
+    try {
+      const response = await fetch(endpoint, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+      const data = await response.json().catch(() => ({}));
+      if (!response.ok) {
+        setError(data.error ?? "Unable to continue. Please try again.");
+        return;
+      }
 
-    const next = searchParams.get("next") || (isAdmin ? "/admin" : "/app");
-    router.push(next);
-    router.refresh();
+      const next = searchParams.get("next") || (isAdmin ? "/admin" : "/app");
+      router.push(next);
+      router.refresh();
+    } catch {
+      setError("We could not reach ONE. Check your connection and try again.");
+    } finally {
+      setLoading(false);
+    }
   }
 
   const passwordInputType = showPassword ? "text" : "password";
@@ -110,7 +115,7 @@ export function AuthForm({ mode }: { mode: AuthMode }) {
               <div className="form-grid">
                 <div className="field">
                   <label htmlFor="mobileNumber">Mobile number</label>
-                  <input id="mobileNumber" type="tel" inputMode="tel" value={mobileNumber} onChange={(event) => setMobileNumber(event.target.value)} autoComplete="tel" placeholder="e.g. +63 917 000 0000" required />
+                  <input id="mobileNumber" type="tel" inputMode="tel" value={mobileNumber} onChange={(event) => setMobileNumber(event.target.value)} autoComplete="tel" placeholder="e.g. +63 917 000 0000" minLength={7} pattern="[0-9+() -]{7,}" title="Enter at least 7 digits; spaces, +, parentheses, and hyphens are allowed." required />
                 </div>
                 <div className="field">
                   <label htmlFor="address">Address</label>
@@ -149,8 +154,7 @@ export function AuthForm({ mode }: { mode: AuthMode }) {
           )}
 
           <button className="button primary full-width" disabled={loading}>
-            {loading ? (isRegistration ? "Creating account…" : "Signing in…") : (isRegistration ? "Create account" : "Sign in")}
-            <ArrowRight size={16} />
+            {loading ? <><LoaderCircle className="button-spinner" size={16} />{isRegistration ? "Creating account…" : "Signing in…"}</> : <>{isRegistration ? "Create account" : "Sign in"}<ArrowRight size={16} /></>}
           </button>
         </form>
 
@@ -163,6 +167,7 @@ export function AuthForm({ mode }: { mode: AuthMode }) {
               {isRegistration ? "Already have an account? " : "Need an account? "}
               <Link href={isRegistration ? "/login" : "/register"}>{isRegistration ? "Sign in" : "Register"}</Link>
             </p>
+            <Link className="back-link auth-back-link" href="/"><ArrowLeft size={15} /> Back to home</Link>
             <p className="auth-legal"><PolicyLinks /></p>
           </>
         )}

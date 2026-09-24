@@ -3,7 +3,7 @@
 
 import Link from "next/link";
 import { FormEvent, useEffect, useMemo, useState } from "react";
-import { Check, ChevronLeft, ChevronRight, LocateFixed, MapPin, Upload, X } from "lucide-react";
+import { Check, ChevronLeft, ChevronRight, LoaderCircle, LocateFixed, MapPin, Upload, X } from "lucide-react";
 import { LocationPicker, type MapCoordinates } from "@/components/location-picker";
 import { categoryLabels, concernCategories, type ConcernCategory } from "@/lib/types";
 
@@ -78,14 +78,19 @@ export function ReportForm() {
     }
     files.forEach((file) => data.append("evidence", file));
 
-    const response = await fetch("/api/concerns", { method: "POST", body: data });
-    const result = await response.json().catch(() => ({}));
-    setLoading(false);
-    if (!response.ok) {
-      setError(result.error ?? "Unable to submit concern. Please try again.");
-      return;
+    try {
+      const response = await fetch("/api/concerns", { method: "POST", body: data });
+      const result = await response.json().catch(() => ({}));
+      if (!response.ok) {
+        setError(result.error ?? "Unable to submit concern. Please try again.");
+        return;
+      }
+      setSubmittedReference(result.concern.reference);
+    } catch {
+      setError("We could not submit your concern. Check your connection and try again.");
+    } finally {
+      setLoading(false);
     }
-    setSubmittedReference(result.concern.reference);
   }
 
   if (submittedReference) {
@@ -137,8 +142,8 @@ export function ReportForm() {
         {step === 1 && (
           <div className="form-stack">
             <div><h2>Tell us what happened</h2><p className="muted small">Specific details help the right team act faster.</p></div>
-            <div className="field"><label htmlFor="title">Short title</label><input id="title" value={title} onChange={(event) => setTitle(event.target.value)} placeholder="e.g. Garbage accumulating near a drainage canal" /></div>
-            <div className="field"><label htmlFor="description">Description</label><textarea id="description" value={description} onChange={(event) => setDescription(event.target.value)} placeholder="What did you observe? Who or what is affected?" /><small>{description.length}/3000</small></div>
+            <div className="field"><label htmlFor="title">Short title</label><input id="title" value={title} onChange={(event) => setTitle(event.target.value)} placeholder="e.g. Garbage accumulating near a drainage canal" minLength={5} maxLength={120} required /><small>At least 5 characters.</small></div>
+            <div className="field"><label htmlFor="description">Description</label><textarea id="description" value={description} onChange={(event) => setDescription(event.target.value)} placeholder="What did you observe? Who or what is affected?" minLength={20} maxLength={3000} required /><small>{description.length}/3000 characters · at least 20 required.</small></div>
             <div className="field"><label>Urgency</label><div className="choice-grid"><label className="choice"><input type="radio" checked={urgency === "normal"} onChange={() => setUrgency("normal")} /><span><strong>Normal</strong><small>Needs review through the standard queue.</small></span></label><label className="choice"><input type="radio" checked={urgency === "urgent"} onChange={() => setUrgency("urgent")} /><span><strong>Urgent</strong><small>Immediate risk to people, property, or health.</small></span></label></div></div>
           </div>
         )}
@@ -146,7 +151,7 @@ export function ReportForm() {
         {step === 2 && (
           <div className="form-stack">
             <div><h2>Where is it?</h2><p className="muted small">Select an exact point on the Tankulan map, then add a landmark so the team has useful context.</p></div>
-            <div className="field"><label htmlFor="locationText">Location or nearby landmark</label><textarea id="locationText" value={locationText} onChange={(event) => setLocationText(event.target.value)} placeholder="e.g. Beside the public market, near the east drainage canal" /></div>
+            <div className="field"><label htmlFor="locationText">Location or nearby landmark</label><textarea id="locationText" value={locationText} onChange={(event) => setLocationText(event.target.value)} placeholder="e.g. Beside the public market, near the east drainage canal" minLength={3} maxLength={500} required /><small>At least 3 characters so the team can find the area.</small></div>
             <div className="location-row"><button type="button" className="button secondary" onClick={locate}><LocateFixed size={16} /> Use current location</button>{coordinates && <span className="notice success"><MapPin size={15} /> Coordinates captured</span>}</div>
             <LocationPicker value={coordinates} onChange={(nextCoordinates) => { setCoordinates(nextCoordinates); setError(""); }} />
             <small className="muted">Coordinates are attached only to this concern to help the operations team locate it.</small>
@@ -178,7 +183,7 @@ export function ReportForm() {
 
         <div className="form-actions">
           {step > 0 ? <button type="button" className="button secondary" onClick={() => { setError(""); setStep((current) => current - 1); }}><ChevronLeft size={16} /> Back</button> : <Link className="button secondary" href="/app">Cancel</Link>}
-          {step < steps.length - 1 ? <button type="button" className="button primary" onClick={next}>Continue <ChevronRight size={16} /></button> : <button type="submit" className="button primary" disabled={loading}>{loading ? "Submitting…" : "Submit concern"}<Check size={16} /></button>}
+          {step < steps.length - 1 ? <button type="button" className="button primary" onClick={next}>Continue <ChevronRight size={16} /></button> : <button type="submit" className="button primary" disabled={loading}>{loading ? <><LoaderCircle className="button-spinner" size={16} />Submitting…</> : <>Submit concern<Check size={16} /></>}</button>}
         </div>
       </form>
     </div>

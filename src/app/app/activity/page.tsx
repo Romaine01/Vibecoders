@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { ClipboardList, FileText } from "lucide-react";
+import { ArrowLeft, ClipboardList, FileText } from "lucide-react";
 import { getCurrentUser } from "@/lib/auth";
 import { listConcerns, store } from "@/lib/demo-store";
 import { ActivityFeed } from "@/components/activity-feed";
@@ -15,6 +15,7 @@ export default async function ActivityPage() {
 
   return (
     <main className="page-main">
+      <Link className="back-link" href="/app"><ArrowLeft size={15} /> Back to home</Link>
       <div className="page-header">
         <div>
           <p className="eyebrow">My activity</p>
