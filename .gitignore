@@ -7,3 +7,9 @@ out/
 !.env.example
 *.log
 *.tsbuildinfo
+.agents/
+.claude/
+.opencode/
+opencode.json
+skills-lock.json
+.md

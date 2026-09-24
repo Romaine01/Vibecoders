@@ -67,10 +67,17 @@ in-memory demo store and API routes. No git history was rewritten.
 
 ## Verification
 - `npm run check` (lint + typecheck + build) is the gate. Run it before commit.
-- Supabase migration `001_one_schema.sql` (Developer 1) and
-  `002_developer2_profile_announcements.sql` (this work) are **not applied** —
-  the database host is unreachable from this environment (no A record / no
-  `psql`). Apply both via the Supabase Dashboard SQL editor in order.
+- Supabase connectivity audit (2026-09-24, see `docs/PROMPT_LOG.md` prompt 5):
+  - Project **online**: REST 443 reachable; GoTrue health HTTP 200; PostgREST answering.
+  - Schema **empty**: all tables missing (`PGRST205`) — migrations `001` + `002`
+    not applied; storage buckets `[]`.
+  - Direct DB **unreachable** from this machine (IPv6-only host, no local IPv6
+    route, no `psql`, no Supabase CLI) — apply both migrations in the
+    Supabase Dashboard SQL editor, in order.
+  - App **not wired**: every route uses the in-memory demo store;
+    `src/lib/supabase/*` clients are defined but unused. Local `.env` now also
+    defines `NEXT_PUBLIC_SUPABASE_ANON_KEY` (alias of the publishable key) so
+    `supabaseConfigured` can become true once wiring starts.
 
 ## Blocked / remaining (not attempted)
 - Full Supabase wiring of the demo store (Phase 14 approval gate): touches
