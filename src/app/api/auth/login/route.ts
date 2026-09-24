@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
-import { authenticateResident, createSession, demoCredentials, getProfileByEmail } from "@/lib/demo-store";
+import { authenticateResident, demoCredentials, getProfileByEmail } from "@/lib/demo-store";
 import { sessionCookieName } from "@/lib/auth";
+import { createDemoSession } from "@/lib/demo-session";
 import { createSupabaseServerClient, supabaseConfigured } from "@/lib/supabase/server";
 import { getSupabaseProfile } from "@/lib/supabase/profile";
 
@@ -34,7 +35,7 @@ export async function POST(request: Request) {
   if (!profile || profile.role !== role) return NextResponse.json({ error: "This account is not available in the selected workspace." }, { status: 403 });
 
   const response = NextResponse.json({ user: profile });
-  response.cookies.set(sessionCookieName, createSession(profile), {
+  response.cookies.set(sessionCookieName, createDemoSession(profile), {
     httpOnly: true,
     sameSite: "lax",
     secure: process.env.NODE_ENV === "production",

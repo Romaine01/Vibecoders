@@ -21,7 +21,6 @@ interface DemoStore {
   emergencyContacts: EmergencyContact[];
   auditLogs: { id: string; actorId: string; action: string; entityType: string; entityId: string; metadata: Record<string, unknown>; createdAt: string }[];
   impactRecords: { id: string; concernId: string; sdgCode: string; outcome: string; recordedBy: string; createdAt: string }[];
-  sessions: Map<string, Profile>;
   credentials: Map<string, string>;
 }
 
@@ -75,7 +74,6 @@ function createInitialStore(): DemoStore {
     ],
     auditLogs: [],
     impactRecords: [],
-    sessions: new Map(),
     credentials: new Map([["resident@one.local", "demo-resident"]]),
   };
 }
@@ -132,20 +130,6 @@ export function authenticateResident(email: string, password: string) {
   const profile = getProfileByEmail(email);
   if (!profile || profile.role !== "resident") return null;
   return store.credentials.get(email.toLowerCase()) === password ? profile : null;
-}
-
-export function createSession(profile: Profile) {
-  const sessionId = crypto.randomUUID();
-  store.sessions.set(sessionId, profile);
-  return sessionId;
-}
-
-export function getSession(sessionId: string | undefined) {
-  return sessionId ? store.sessions.get(sessionId) : undefined;
-}
-
-export function deleteSession(sessionId: string | undefined) {
-  if (sessionId) store.sessions.delete(sessionId);
 }
 
 export function createConcern(input: {

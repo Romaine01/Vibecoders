@@ -1,8 +1,9 @@
 import { cookies } from "next/headers";
-import { deleteSession, getSession } from "@/lib/demo-store";
+import { getProfileById } from "@/lib/demo-store";
 import type { Profile, UserRole } from "@/lib/types";
 import { createSupabaseServerClient, supabaseConfigured } from "@/lib/supabase/server";
 import { getSupabaseProfile } from "@/lib/supabase/profile";
+import { getDemoSession } from "@/lib/demo-session";
 
 export const sessionCookieName = "one_session";
 
@@ -13,8 +14,8 @@ export async function getCurrentUser(): Promise<Profile | null> {
     return user ? getSupabaseProfile(supabase, user) : null;
   }
   const cookieStore = await cookies();
-  const sessionId = cookieStore.get(sessionCookieName)?.value;
-  return getSession(sessionId) ?? null;
+  const profileId = getDemoSession(cookieStore.get(sessionCookieName)?.value);
+  return profileId ? getProfileById(profileId) ?? null : null;
 }
 
 export async function requireUser(role?: UserRole) {
@@ -30,7 +31,5 @@ export async function clearCurrentSession() {
     await supabase.auth.signOut();
   }
   const cookieStore = await cookies();
-  const sessionId = cookieStore.get(sessionCookieName)?.value;
-  deleteSession(sessionId);
   cookieStore.delete(sessionCookieName);
 }

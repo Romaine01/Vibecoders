@@ -10,12 +10,14 @@
 - Evidence accepts images only and rejects files over 5 MB.
 - Public verification returns safe document metadata only.
 - Service-role credentials are not referenced in client components.
+- Fallback demo sessions are signed and stateless for serverless compatibility; they are not a replacement for Supabase Auth or durable user data.
 
 ## Production requirements before deployment
 
 The local demo store is process-local and should not be deployed as production persistence. Before production rollout:
 
 - Configure the Supabase Auth path so sessions use Supabase Auth cookies; the local fallback is intended only for explicit development mode.
+- Set a strong `ONE_SESSION_SECRET` anywhere the fallback demo mode is exposed, and never use the fallback mode for real resident accounts.
 - Replace in-process reads/writes with Supabase server-side queries.
 - Run the migration and verify RLS policies in a non-production project.
 - Put resident and completion evidence in a private Storage bucket with owner/admin policies.

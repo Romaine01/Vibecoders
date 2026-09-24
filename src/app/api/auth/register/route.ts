@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
-import { createSession, createResident, getProfileByEmail } from "@/lib/demo-store";
+import { createResident, getProfileByEmail } from "@/lib/demo-store";
 import { sessionCookieName } from "@/lib/auth";
+import { createDemoSession } from "@/lib/demo-session";
 import { registrationSchema } from "@/lib/validation";
 import { createSupabaseServerClient, supabaseConfigured } from "@/lib/supabase/server";
 import { getSupabaseProfile } from "@/lib/supabase/profile";
@@ -33,6 +34,6 @@ export async function POST(request: Request) {
 
   const profile = createResident(input);
   const response = NextResponse.json({ user: profile }, { status: 201 });
-  response.cookies.set(sessionCookieName, createSession(profile), { httpOnly: true, sameSite: "lax", secure: process.env.NODE_ENV === "production", path: "/", maxAge: 60 * 60 * 24 * 7 });
+  response.cookies.set(sessionCookieName, createDemoSession(profile), { httpOnly: true, sameSite: "lax", secure: process.env.NODE_ENV === "production", path: "/", maxAge: 60 * 60 * 24 * 7 });
   return response;
 }

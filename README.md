@@ -8,6 +8,7 @@ It gives residents a private workspace for concerns and document requests, and g
 
 - Next.js 16 App Router, React 19, TypeScript, `next/font` Inter, Lucide React, Zod, and Framer Motion for reduced-motion-aware interface transitions.
 - Authentication uses Supabase Auth and cookie-backed sessions whenever the Supabase environment variables are configured. Without them, the app stays in an explicit local demo mode so the UI can run without external credentials; operational records still use the local demo store until the data adapter is enabled.
+- The fallback demo login uses a signed, stateless cookie so the demo accounts remain usable across serverless instances. Set `ONE_SESSION_SECRET` for any shared demo deployment; use Supabase Auth for production accounts.
 - `supabase/migrations/001_one_schema.sql` defines the production PostgreSQL entities, RLS foundation, role function, and ownership policies.
 - Supabase packages and environment variables are included as the production integration boundary; the adapter should be enabled before deploying a multi-instance production environment.
 - No reference-application logos, seals, names, or location-specific assets are used.
@@ -43,6 +44,7 @@ Copy `.env.example` to `.env.local` and configure:
 NEXT_PUBLIC_SUPABASE_URL=https://your-project.supabase.co
 NEXT_PUBLIC_SUPABASE_ANON_KEY=...
 SUPABASE_SERVICE_ROLE_KEY=...
+ONE_SESSION_SECRET=...
 NEXT_PUBLIC_ORGANIZATION_NAME=ONE Community Services
 NEXT_PUBLIC_ORGANIZATION_REGION=Your community
 ```

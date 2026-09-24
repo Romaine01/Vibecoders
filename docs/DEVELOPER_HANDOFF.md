@@ -37,6 +37,7 @@ Resident and admin layouts enforce their role boundaries. Put a public route out
 ## Before production
 
 - Supabase Auth is wired behind `supabaseConfigured`; set the public URL/key and apply the profile trigger migration to use real sessions and profile creation. The concern/document data adapter remains process-local until the supplied server-side Supabase queries are enabled.
+- If a serverless demo deployment must use the fallback accounts, set `ONE_SESSION_SECRET`; fallback sessions are signed so navigation continues across instances, but the demo store still resets and is not production persistence.
 - Apply `supabase/migrations/001_one_schema.sql`, validate RLS with resident/admin fixtures, and configure private Storage.
 - Add production credentials only through deployment environment variables; never commit `.env.local`.
 - Test the installed PWA on real iOS and Android hardware, especially the safe-area header, input keyboard behavior, install icon, and theme color.
