@@ -1,11 +1,13 @@
 import Link from "next/link";
 import { BarChart3, ClipboardList, FileText, Megaphone, Plus, ShieldAlert } from "lucide-react";
-import { requireUser } from "@/lib/auth";
+import { getCurrentUser } from "@/lib/auth";
 import { listConcerns, store } from "@/lib/demo-store";
 import { ActionCard, ActivityRow, AnnouncementRow, MetricCard } from "@/components/ui";
 
 export default async function ResidentHome() {
-  const user = await requireUser("resident");
+  const user = await getCurrentUser();
+  // The protected layout owns redirects. Avoid throwing while Next renders this page in parallel.
+  if (!user || user.role !== "resident") return null;
   const concerns = listConcerns(user.id);
   const resolved = concerns.filter((concern) => concern.status === "resolved").length;
   const active = concerns.filter((concern) => !["resolved", "rejected"].includes(concern.status)).length;
