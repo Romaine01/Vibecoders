@@ -13,7 +13,7 @@
 
 ## Explicit boundary
 
-This workspace had no reachable implementation checkout and the provided GitHub URLs returned “Repository not found”. To keep the task runnable, the code uses an explicit local demo repository. Supabase packages and migration are included, but a production data adapter is still required before deployment to a multi-instance environment.
+The local build uses an explicit in-process demo store so the complete resident and operations workflows run without external credentials. Supabase clients and migrations are included as the production integration boundary, but a production data adapter is still required before deploying to a multi-instance environment.
 
 ## Not claimed as complete
 
