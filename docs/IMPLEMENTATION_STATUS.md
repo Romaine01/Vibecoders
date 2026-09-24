@@ -17,5 +17,5 @@ The local build uses an explicit in-process demo store so the complete resident 
 
 ## Not claimed as complete
 
-- Real Supabase Auth / Postgres / Storage runtime wiring has not been verified because no project URL or keys were supplied.
+- Supabase Auth session, sign-up, profile lookup, logout, and role-check code paths are wired but cannot be runtime-verified in this checkout because no project URL or keys are supplied. Concern/document persistence still uses the explicit local adapter.
 - Browser visual inspection at 375/430/768/1024/1440 was not available through the current tool set; responsive CSS covers those ranges and should receive a final device pass.

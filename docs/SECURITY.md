@@ -15,7 +15,7 @@
 
 The local demo store is process-local and should not be deployed as production persistence. Before production rollout:
 
-- Replace demo sessions with Supabase Auth cookies.
+- Configure the Supabase Auth path so sessions use Supabase Auth cookies; the local fallback is intended only for explicit development mode.
 - Replace in-process reads/writes with Supabase server-side queries.
 - Run the migration and verify RLS policies in a non-production project.
 - Put resident and completion evidence in a private Storage bucket with owner/admin policies.

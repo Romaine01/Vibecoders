@@ -7,7 +7,7 @@ It gives residents a private workspace for concerns and document requests, and g
 ## Current implementation
 
 - Next.js 16 App Router, React 19, TypeScript, `next/font` Inter, Lucide React, Zod, and Framer Motion for reduced-motion-aware interface transitions.
-- Resident and admin workflows are implemented as route handlers backed by an explicit in-process demo store so the complete golden demo runs without external credentials.
+- Authentication uses Supabase Auth and cookie-backed sessions whenever the Supabase environment variables are configured. Without them, the app stays in an explicit local demo mode so the UI can run without external credentials; operational records still use the local demo store until the data adapter is enabled.
 - `supabase/migrations/001_one_schema.sql` defines the production PostgreSQL entities, RLS foundation, role function, and ownership policies.
 - Supabase packages and environment variables are included as the production integration boundary; the adapter should be enabled before deploying a multi-instance production environment.
 - No reference-application logos, seals, names, or location-specific assets are used.
@@ -32,6 +32,7 @@ The demo store is process-local and resets when the server restarts. It is inten
 
 - Concern reporting includes a satellite location picker centered on Kihare, Tankulan, Manolo Fortich. It needs an internet connection for imagery; residents can still provide a landmark or use browser geolocation.
 - Open `/install` to test the PWA installation experience. Chromium browsers use the native install prompt when available; iPhone and iPad receive Safari Add to Home Screen instructions.
+- The resident help assistant is a knowledge-based FAQ for concerns, documents, statuses, announcements, emergency resources, profiles, and installation. It does not access private records or claim to be an AI service.
 - The minimal service worker intentionally keeps the app online-first. It enables installation without introducing unverified offline data synchronization.
 
 ## Production configuration
@@ -52,7 +53,7 @@ Run the migration in Supabase before wiring production persistence:
 supabase/migrations/001_one_schema.sql
 ```
 
-Never expose `SUPABASE_SERVICE_ROLE_KEY` to browser code. The production adapter must use Supabase Auth for sessions, Storage for evidence, server-side role checks, and the RLS policies supplied in the migration.
+Never expose `SUPABASE_SERVICE_ROLE_KEY` to browser code. Supabase Auth owns production sessions and the profile trigger creates resident records; the remaining production adapter must use server-side queries, Storage for evidence, role checks, and the RLS policies supplied in the migrations.
 
 ## Quality checks
 

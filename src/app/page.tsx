@@ -11,6 +11,7 @@ import {
 } from "lucide-react";
 import { InstallOneButton } from "@/components/install-one";
 import { PolicyLinks } from "@/components/policy-dialog";
+import { ResidentChatbot } from "@/components/resident-chatbot";
 import { Brand } from "@/components/ui";
 
 export default function LandingPage() {
@@ -37,7 +38,6 @@ export default function LandingPage() {
         <div className="hero-overlay" />
         <div className="page-width hero-grid">
           <div>
-            <p className="eyebrow"><span className="eyebrow-dot" /> Community services, connected</p>
             <h1>Make community action visible.</h1>
             <p className="hero-copy">ONE gives residents a clear way to report needs, request public documents, and follow each outcome from first submission to measurable impact.</p>
             <div className="hero-actions">
@@ -103,7 +103,9 @@ export default function LandingPage() {
         <div className="page-width footer-grid">
           <div className="footer-product"><Brand /><p>ONE — Community Services &amp; Development Platform</p><small>Report. Request. Track. Connect.</small><div className="footer-links"><Link href="/install">Install ONE</Link><PolicyLinks /></div></div>
           <div className="footer-community">
-            <p>Community technology partners</p>
+            <p>Team members</p>
+            <ul className="team-list"><li>LYLE AGREDA</li><li>YANREY ROMAINE ESTRADA</li><li>MHYLES GABB AGUILAR</li><li>ERICH LORAIN DE LA CERNA</li></ul>
+            <p className="partner-label">Community technology partners</p>
             <div className="footer-partner-logos">
               <Image className="footer-devcon-logo" src="/brand/devcon-bukidnon.png" alt="DEVCON Bukidnon" width={1254} height={1254} sizes="120px" />
               <Image className="footer-community-logo" src="/brand/developer-community.png" alt="Developer community mark" width={1317} height={1194} sizes="84px" />
@@ -111,6 +113,7 @@ export default function LandingPage() {
           </div>
         </div>
       </footer>
+      <ResidentChatbot />
     </main>
   );
 }

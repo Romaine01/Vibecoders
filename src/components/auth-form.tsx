@@ -25,12 +25,14 @@ export function AuthForm({ mode }: { mode: AuthMode }) {
   const [acceptedPolicies, setAcceptedPolicies] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState("");
+  const [message, setMessage] = useState("");
   const [loading, setLoading] = useState(false);
   const endpoint = isRegistration ? "/api/auth/register" : "/api/auth/login";
 
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setError("");
+    setMessage("");
 
     if (isRegistration && !acceptedPolicies) {
       setError("Please read and accept the Terms and Conditions and Privacy Policy to create an account.");
@@ -54,6 +56,10 @@ export function AuthForm({ mode }: { mode: AuthMode }) {
       const data = await response.json().catch(() => ({}));
       if (!response.ok) {
         setError(data.error ?? "Unable to continue. Please try again.");
+        return;
+      }
+      if (data.requiresEmailConfirmation) {
+        setMessage(data.message);
         return;
       }
 
@@ -94,6 +100,7 @@ export function AuthForm({ mode }: { mode: AuthMode }) {
         )}
 
         {error && <div className="notice error" role="alert"><LockKeyhole size={16} />{error}</div>}
+        {message && <div className="notice success" role="status">{message}</div>}
 
         <form className="form-stack" onSubmit={submit}>
           {isRegistration && (
