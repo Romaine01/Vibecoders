@@ -39,7 +39,7 @@ Resident and admin layouts enforce their role boundaries. Put a public route out
 - Supabase Auth is wired behind `supabaseConfigured`; set the public URL/key and apply the profile trigger migration to use real sessions and profile creation. The concern/document data adapter remains process-local until the supplied server-side Supabase queries are enabled.
 - If a serverless demo deployment must use the fallback accounts, set `ONE_SESSION_SECRET`; fallback sessions are signed so navigation continues across instances, but the demo store still resets and is not production persistence.
 - A fallback registration also sets `one_demo_account`, a signed HttpOnly cookie with a salted password hash. It allows that browser to sign in again for seven days even when another serverless instance handles the request. Do not present this as a durable account or a substitute for Supabase Auth.
-- Apply `supabase/migrations/001_one_schema.sql`, validate RLS with resident/admin fixtures, and configure private Storage.
+- Apply `supabase/migrations/` in timestamp order, validate RLS with resident/admin fixtures, and configure private Storage.
 - Add production credentials only through deployment environment variables; never commit `.env.local`.
 - Test the installed PWA on real iOS and Android hardware, especially the safe-area header, input keyboard behavior, install icon, and theme color.
 - The Tankulan satellite tiles are supplied by Esri at runtime. Confirm pan, zoom, pin placement, imagery availability, and browser geolocation permission on a real phone before deployment.

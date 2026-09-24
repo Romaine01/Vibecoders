@@ -9,7 +9,7 @@ It gives residents a private workspace for concerns and document requests, and g
 - Next.js 16 App Router, React 19, TypeScript, `next/font` Inter, Lucide React, Zod, and Framer Motion for reduced-motion-aware interface transitions.
 - Authentication uses Supabase Auth and cookie-backed sessions whenever the Supabase environment variables are configured. Without them, the app stays in an explicit local demo mode so the UI can run without external credentials; operational records still use the local demo store until the data adapter is enabled.
 - The fallback demo login uses signed, stateless cookies so demo accounts remain usable across serverless instances. New demo registrations keep a password hash in an HttpOnly cookie for seven days, so they can sign in again from the same browser. They do not create durable, cross-device accounts. Set `ONE_SESSION_SECRET` for any shared demo deployment; use Supabase Auth for production accounts.
-- `supabase/migrations/001_one_schema.sql` defines the production PostgreSQL entities, RLS foundation, role function, and ownership policies.
+- `supabase/migrations/` defines the production PostgreSQL entities, profile fields, and RLS policies.
 - Supabase packages and environment variables are included as the production integration boundary; the adapter should be enabled before deploying a multi-instance production environment.
 - No reference-application logos, seals, names, or location-specific assets are used.
 
@@ -49,10 +49,10 @@ NEXT_PUBLIC_ORGANIZATION_NAME=ONE Community Services
 NEXT_PUBLIC_ORGANIZATION_REGION=Your community
 ```
 
-Run the migration in Supabase before wiring production persistence:
+Apply the migrations in `supabase/migrations/` in timestamp order before wiring production persistence:
 
 ```text
-supabase/migrations/001_one_schema.sql
+supabase/migrations/
 ```
 
 Never expose `SUPABASE_SERVICE_ROLE_KEY` to browser code. Supabase Auth owns production sessions and the profile trigger creates resident records; the remaining production adapter must use server-side queries, Storage for evidence, role checks, and the RLS policies supplied in the migrations.
