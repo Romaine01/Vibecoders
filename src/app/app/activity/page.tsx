@@ -1,17 +1,17 @@
 import Link from "next/link";
 import { ArrowLeft, ClipboardList, FileText } from "lucide-react";
 import { getCurrentUser } from "@/lib/auth";
-import { listConcerns, store } from "@/lib/demo-store";
+import { listConcerns, listDocuments } from "@/lib/data-store";
 import { ActivityFeed } from "@/components/activity-feed";
 
 export default async function ActivityPage() {
   const user = await getCurrentUser();
   if (!user || user.role !== "resident") return null;
 
-  const concerns = listConcerns(user.id);
-  const documents = store.documentRequests.filter(
-    (request) => request.residentId === user.id,
-  );
+  const [concerns, documents] = await Promise.all([
+    listConcerns(user.id),
+    listDocuments(user.id),
+  ]);
 
   return (
     <main className="page-main">

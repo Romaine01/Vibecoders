@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { Flame, HeartPulse, PhoneCall, Shield, Siren, TriangleAlert } from "lucide-react";
-import { store } from "@/lib/demo-store";
+import { listEmergencyContacts } from "@/lib/data-store";
 import {
   emergencyCategories,
   emergencyCategoryLabels,
@@ -15,8 +15,8 @@ const categoryIcons: Record<EmergencyCategory, typeof PhoneCall> = {
   other: PhoneCall,
 };
 
-export default function EmergencyPage() {
-  const contacts = store.emergencyContacts;
+export default async function EmergencyPage() {
+  const contacts = await listEmergencyContacts();
   const grouped = emergencyCategories
     .map((category) => ({
       category,

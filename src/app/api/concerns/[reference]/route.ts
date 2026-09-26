@@ -1,12 +1,12 @@
 import { NextResponse } from "next/server";
 import { requireUser } from "@/lib/auth";
-import { getConcern } from "@/lib/demo-store";
+import { getConcern } from "@/lib/data-store";
 
 export async function GET(_request: Request, { params }: { params: Promise<{ reference: string }> }) {
   try {
     const user = await requireUser();
     const { reference } = await params;
-    const concern = getConcern(reference);
+    const concern = await getConcern(reference);
     if (!concern || (user.role === "resident" && concern.residentId !== user.id)) return NextResponse.json({ error: "Concern not found." }, { status: 404 });
     return NextResponse.json({ concern });
   } catch {

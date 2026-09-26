@@ -1,15 +1,16 @@
 import { NextResponse } from "next/server";
 import { getCurrentUser } from "@/lib/auth";
-import { store } from "@/lib/demo-store";
+import { createAnnouncement, listAnnouncements } from "@/lib/data-store";
 import { announcementStatuses, announcementTypes } from "@/lib/types";
 
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
   const scope = searchParams.get("scope");
+  const allAnnouncements = await listAnnouncements();
   const announcements =
     scope === "published"
-      ? store.announcements.filter((item) => !item.status || item.status === "published")
-      : store.announcements;
+      ? allAnnouncements.filter((item) => !item.status || item.status === "published")
+      : allAnnouncements;
   return NextResponse.json({ announcements });
 }
 
@@ -22,15 +23,12 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Title and excerpt are required." }, { status: 400 });
   const type = announcementTypes.includes(body.type) ? body.type : "announcement";
   const status = announcementStatuses.includes(body.status) ? body.status : "published";
-  const announcement = {
-    id: crypto.randomUUID(),
-    priority: body.priority === "high" ? ("high" as const) : ("standard" as const),
+  const announcement = await createAnnouncement({
+    priority: body.priority === "high" ? "high" : "standard",
     title: String(body.title),
     excerpt: String(body.excerpt),
-    publishedAt: new Date().toISOString(),
     type,
     status,
-  };
-  store.announcements.unshift(announcement);
+  });
   return NextResponse.json({ announcement }, { status: 201 });
 }

@@ -1,10 +1,11 @@
 import { Megaphone } from "lucide-react";
-import { store } from "@/lib/demo-store";
+import { listAnnouncements } from "@/lib/data-store";
 import { AnnouncementRow } from "@/components/ui";
 import { announcementTypes, type AnnouncementType } from "@/lib/types";
 
-export default function AnnouncementsPage() {
-  const published = store.announcements.filter(
+export default async function AnnouncementsPage() {
+  const announcements = await listAnnouncements();
+  const published = announcements.filter(
     (item) => !item.status || item.status === "published",
   );
 

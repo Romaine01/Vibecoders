@@ -1,11 +1,11 @@
 import Link from "next/link";
 import { CheckCircle2, ShieldCheck, XCircle } from "lucide-react";
-import { publicDocumentVerification } from "@/lib/demo-store";
+import { publicDocumentVerification } from "@/lib/data-store";
 import { Brand } from "@/components/ui";
 
 export default async function VerifyPage({ params }: { params: Promise<{ reference: string }> }) {
   const { reference } = await params;
-  const document = publicDocumentVerification(reference);
+  const document = await publicDocumentVerification(reference);
   return (
     <main className="verify-page">
       <div className="verify-card">

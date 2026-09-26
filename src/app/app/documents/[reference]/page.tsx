@@ -2,7 +2,7 @@ import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
 import { notFound } from "next/navigation";
 import { getCurrentUser } from "@/lib/auth";
-import { getDocument } from "@/lib/demo-store";
+import { getDocument } from "@/lib/data-store";
 import { DocumentDetail } from "@/components/document-detail";
 
 export default async function DocumentDetailPage({
@@ -11,7 +11,7 @@ export default async function DocumentDetailPage({
   params: Promise<{ reference: string }>;
 }) {
   const [user, { reference }] = await Promise.all([getCurrentUser(), params]);
-  const request = getDocument(reference);
+  const request = await getDocument(reference);
   if (!user || user.role !== "resident" || !request || request.residentId !== user.id) notFound();
 
   return (
