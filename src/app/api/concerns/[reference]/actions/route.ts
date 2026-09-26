@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { requireUser } from "@/lib/auth";
-import { addAuditLog, addConcernUpdate, addImpactRecords, getConcern } from "@/lib/demo-store";
+import { addAuditLog, addConcernUpdate, addImpactRecords, getConcern } from "@/lib/data-store";
 import { adminActionSchema } from "@/lib/validation";
 import type { Attachment, ConcernStatus } from "@/lib/types";
 
@@ -10,7 +10,7 @@ export async function POST(request: Request, { params }: { params: Promise<{ ref
   try {
     const admin = await requireUser("admin");
     const { reference } = await params;
-    const concern = getConcern(reference);
+    const concern = await getConcern(reference);
     if (!concern) return NextResponse.json({ error: "Concern not found." }, { status: 404 });
     const isJson = request.headers.get("content-type")?.includes("application/json");
     const jsonBody = isJson ? await request.json().catch(() => ({})) : null;
@@ -31,10 +31,11 @@ export async function POST(request: Request, { params }: { params: Promise<{ ref
       completionEvidence = { id: crypto.randomUUID(), fileName: evidence.name, mimeType: evidence.type, dataUrl: `data:${evidence.type};base64,${bytes}`, createdAt: new Date().toISOString() };
     }
     const note = parsed.data.note || (parsed.data.action === "assign" ? `Assigned to ${parsed.data.assignedTo}.` : `Status changed to ${nextStatus.replaceAll("_", " ")}.`);
-    addConcernUpdate(concern, { status: nextStatus, note, actorName: admin.fullName, assignedTo: parsed.data.assignedTo, actionTaken: parsed.data.actionTaken, resolutionNotes: parsed.data.resolutionNotes, completionEvidence });
-    addAuditLog({ actorId: admin.id, action: `concern.${parsed.data.action}`, entityType: "concern", entityId: concern.id, metadata: { reference: concern.reference, status: nextStatus } });
-    if (nextStatus === "resolved") addImpactRecords(concern, admin.id);
-    return NextResponse.json({ concern });
+    await addConcernUpdate(concern, { status: nextStatus, note, actorName: admin.fullName, actorId: admin.id, assignedTo: parsed.data.assignedTo, actionTaken: parsed.data.actionTaken, resolutionNotes: parsed.data.resolutionNotes, completionEvidence });
+    await addAuditLog({ actorId: admin.id, action: `concern.${parsed.data.action}`, entityType: "concern", entityId: concern.id, metadata: { reference: concern.reference, status: nextStatus } });
+    if (nextStatus === "resolved") await addImpactRecords(concern, admin.id);
+    const updatedConcern = await getConcern(reference);
+    return NextResponse.json({ concern: updatedConcern ?? concern });
   } catch (error) {
     const message = error instanceof Error ? error.message : "Unable to update concern.";
     return NextResponse.json({ error: message === "AUTH_REQUIRED" ? "Sign in required." : message === "FORBIDDEN" ? "Admin access required." : message }, { status: message === "FORBIDDEN" ? 403 : 401 });

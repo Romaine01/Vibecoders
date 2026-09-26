@@ -1,10 +1,11 @@
 import { NextResponse } from "next/server";
 import { getCurrentUser } from "@/lib/auth";
-import { store } from "@/lib/demo-store";
+import { createEmergencyContact, listEmergencyContacts } from "@/lib/data-store";
 import { emergencyCategories } from "@/lib/types";
 
 export async function GET() {
-  return NextResponse.json({ contacts: store.emergencyContacts });
+  const contacts = await listEmergencyContacts();
+  return NextResponse.json({ contacts });
 }
 
 export async function POST(request: Request) {
@@ -13,7 +14,11 @@ export async function POST(request: Request) {
   const body = await request.json().catch(() => ({}));
   if (!body.label || !body.number || !body.description) return NextResponse.json({ error: "Label, number, and description are required." }, { status: 400 });
   const category = emergencyCategories.includes(body.category) ? body.category : "other";
-  const contact = { id: crypto.randomUUID(), label: String(body.label), number: String(body.number), description: String(body.description), category };
-  store.emergencyContacts.push(contact);
+  const contact = await createEmergencyContact({
+    label: String(body.label),
+    number: String(body.number),
+    description: String(body.description),
+    category,
+  });
   return NextResponse.json({ contact }, { status: 201 });
 }

@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { requireUser } from "@/lib/auth";
-import { createConcern, listConcerns } from "@/lib/demo-store";
+import { createConcern, listConcerns } from "@/lib/data-store";
 import { concernSchema } from "@/lib/validation";
 import type { Attachment } from "@/lib/types";
 
@@ -19,7 +19,8 @@ async function attachmentsFromForm(formData: FormData, field: string) {
 export async function GET() {
   try {
     const user = await requireUser();
-    return NextResponse.json({ concerns: listConcerns(user.role === "resident" ? user.id : undefined) });
+    const concerns = await listConcerns(user.role === "resident" ? user.id : undefined);
+    return NextResponse.json({ concerns });
   } catch (error) {
     return NextResponse.json({ error: error instanceof Error && error.message === "FORBIDDEN" ? "Forbidden" : "Sign in required." }, { status: 401 });
   }
@@ -40,7 +41,7 @@ export async function POST(request: Request) {
     });
     if (!parsed.success) return NextResponse.json({ error: "Check the required concern details.", issues: parsed.error.flatten() }, { status: 400 });
     const attachments = await attachmentsFromForm(formData, "evidence");
-    const concern = createConcern({ resident: user, ...parsed.data, attachments });
+    const concern = await createConcern({ resident: user, ...parsed.data, attachments });
     return NextResponse.json({ concern }, { status: 201 });
   } catch (error) {
     const message = error instanceof Error ? error.message : "Unable to submit concern.";
